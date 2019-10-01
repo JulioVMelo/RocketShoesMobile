@@ -7,23 +7,50 @@ import {
   Image,
   TouchableOpacity,
 } from 'react-native';
+import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
+import * as ProductActions from '../../store/ducks/products';
+import * as CartActions from '../../store/ducks/cart';
 
-export default function ProductList() {
-  return (
-    <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-      <View style={S.Card}>
-        <Image
-          style={S.Image}
-          source={require('../../assets/images/image_shoes.png')}
-        />
-        <Text style={S.Title}>Tênis de caminhada leve confortável</Text>
-        <Text style={S.Price}>R$179,90</Text>
-        <TouchableOpacity style={S.ButtonAdd}>
-          <Text style={S.ButtonText}>ADICIONAR</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
-  );
+class ProductList extends React.Component {
+  constructor(props) {
+    super(props);
+    this.handleAddCart = this.handleAddCart.bind(this);
+    // const {list} = props;
+  }
+
+  handleAddCart(id, price) {
+    const listItemsDuplicates = this.props.state.cart.filter(
+      itemCart => itemCart.id === id,
+    );
+
+    if (listItemsDuplicates.length === 0) {
+      this.props.CartActions.addProductToCart(id, price);
+    } else {
+      this.props.CartActions.incrementAmount(id);
+    }
+  }
+
+  render() {
+    return (
+      <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+        {this.props.list.map(item => (
+          <View style={S.Card} key={item.id}>
+            <Image style={S.Image} source={{uri: `${item.image}`}} />
+            <Text style={S.Title} numberOfLines={2}>
+              {item.name}
+            </Text>
+            <Text style={S.Price}>R$ {item.price}</Text>
+            <TouchableOpacity
+              style={S.ButtonAdd}
+              onPress={() => this.handleAddCart(item.id, item.price)}>
+              <Text style={S.ButtonText}>ADICIONAR</Text>
+            </TouchableOpacity>
+          </View>
+        ))}
+      </ScrollView>
+    );
+  }
 }
 
 const S = StyleSheet.create({
@@ -65,3 +92,19 @@ const S = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+const mapStateToProps = state => ({
+  state,
+});
+
+function mapDispatchToProps(dispatch) {
+  return {
+    ProductActions: bindActionCreators(ProductActions, dispatch),
+    CartActions: bindActionCreators(CartActions, dispatch),
+  };
+}
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(ProductList);

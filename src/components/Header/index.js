@@ -17,9 +17,11 @@ const Header = props => {
           style={styles.containerBadge}
           onPress={() => props.navigation.navigate('Cart')}>
           <Icon name="shopping-basket" size={32} color="#fff" />
-          <View style={styles.badge}>
-            <Text style={styles.textBadge}>2</Text>
-          </View>
+          {props.qtdItems > 0 && (
+            <View style={styles.badge}>
+              <Text style={styles.textBadge}>{props.qtdItems}</Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
     </View>
