@@ -1,77 +1,123 @@
-import React from 'react';
-import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
+import React, {Component} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  TextInput,
+} from 'react-native';
 import Header from '../../components/Header';
+import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
+import * as CartActions from '../../store/ducks/cart';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import {formatPrice} from '../../util/format';
 
-const Cart = () => (
-  <>
-    <Header />
-    <View style={S.Container}>
-      <View style={S.Content}>
-        <View style={S.Card}>
-          <View style={S.Info}>
-            <Image
-              style={S.Image}
-              source={require('../../assets/images/image_shoes.png')}
-            />
-            <View style={S.Text}>
-              <Text style={S.Title} numberOfLines={2}>
-                Tênis maneiro pra caramba tio na moral
+class Cart extends Component {
+  componentDidMount() {
+    this.props.CartActions.listCart();
+  }
+
+  handleIncrementAmount(id) {
+    this.props.CartActions.incrementAmount(id);
+  }
+
+  handleDecrementAmount(id) {
+    let item = this.props.state.cart.filter(item => item.id === id);
+    let itemAmount = item[0].amount;
+
+    if (itemAmount > 1) {
+      this.props.CartActions.decrementAmount(id);
+    }
+  }
+
+  handleRemoveItem(id) {
+    this.props.CartActions.removeItemToCart(id);
+  }
+
+  render() {
+    const result = this.props.state.cart.map(cartItem =>
+      this.props.state.products.find(
+        productItem => cartItem.id === productItem.id,
+      ),
+    );
+
+    return (
+      <>
+        <Header />
+        <View style={S.Container}>
+          <View style={S.Content}>
+            {result.map((item, index) => (
+              <View style={S.Card} key={item.id}>
+                <View style={S.Info}>
+                  <Image style={S.Image} source={{uri: `${item.image}`}} />
+                  <View style={S.Text}>
+                    <Text style={S.Title} numberOfLines={2}>
+                      {item.name}
+                    </Text>
+                    <Text style={S.Price}>{formatPrice(item.price)}</Text>
+                  </View>
+                </View>
+                <View style={S.Value}>
+                  <View style={S.Actions}>
+                    <TouchableOpacity
+                      onPress={() =>
+                        this.handleDecrementAmount(
+                          this.props.state.cart[index].id,
+                        )
+                      }>
+                      <Icon
+                        name="remove-circle-outline"
+                        size={26}
+                        color="#7159C1"
+                      />
+                    </TouchableOpacity>
+                    <TextInput
+                      style={S.Qtd}
+                      value={`${this.props.state.cart[index].amount}`}
+                      editable={false}
+                    />
+                    <TouchableOpacity
+                      onPress={() =>
+                        this.handleIncrementAmount(
+                          this.props.state.cart[index].id,
+                        )
+                      }>
+                      <Icon
+                        name="add-circle-outline"
+                        size={26}
+                        color="#7159C1"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={S.Price}>
+                    {formatPrice(this.props.state.cart[index].subTotal)}
+                  </Text>
+                </View>
+              </View>
+            ))}
+
+            <View style={S.Total}>
+              <Text style={S.TitleTotal}>Total</Text>
+              <Text style={S.PriceTotal}>
+                {formatPrice(
+                  this.props.state.cart.reduce(
+                    (acc, item) => acc + item.subTotal,
+                    0,
+                  ),
+                )}
               </Text>
-              <Text style={S.Price}>R$ 200,00</Text>
             </View>
-          </View>
-          <View style={S.Value}>
-            <Text style={S.Qtd}>2</Text>
-            <Text style={S.Price}>R$ 200,00</Text>
-          </View>
-        </View>
-        <View style={S.Card}>
-          <View style={S.Info}>
-            <Image
-              style={S.Image}
-              source={require('../../assets/images/image_shoes.png')}
-            />
-            <View style={S.Text}>
-              <Text style={S.Title} numberOfLines={2}>
-                Tênis maneiro pra caramba tio na moral
-              </Text>
-              <Text style={S.Price}>R$ 200,00</Text>
-            </View>
-          </View>
-          <View style={S.Value}>
-            <Text style={S.Qtd}>2</Text>
-            <Text style={S.Price}>R$ 200,00</Text>
+            <TouchableOpacity style={S.ButtonAdd}>
+              <Text style={S.ButtonText}>FINALIZAR PEDIDO</Text>
+            </TouchableOpacity>
           </View>
         </View>
-        <View style={S.Card}>
-          <View style={S.Info}>
-            <Image
-              style={S.Image}
-              source={require('../../assets/images/image_shoes.png')}
-            />
-            <View style={S.Text}>
-              <Text style={S.Title} numberOfLines={2}>
-                Tênis maneiro pra caramba tio na moral
-              </Text>
-              <Text style={S.Price}>R$ 200,00</Text>
-            </View>
-          </View>
-          <View style={S.Value}>
-            <Text style={S.Qtd}>2</Text>
-            <Text style={S.Price}>R$ 200,00</Text>
-          </View>
-        </View>
-        <View style={S.Total}>
-          <Text style={S.TitleTotal}>Total</Text>
-          <Text style={S.PriceTotal}>R$ 200,00</Text>
-        </View>
-        <TouchableOpacity style={S.ButtonAdd}>
-          <Text style={S.ButtonText}>FINALIZAR PEDIDO</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  </>
-);
+      </>
+    );
+  }
+}
 
 const S = StyleSheet.create({
   Container: {
@@ -142,5 +188,32 @@ const S = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+  Actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  Qtd: {
+    marginHorizontal: 10,
+    backgroundColor: '#fff',
+    width: 40,
+    paddingVertical: 5,
+    textAlign: 'center',
+    color: '#7159C1',
+    borderRadius: 4,
+  },
 });
-export default Cart;
+
+const mapStateToProps = state => ({
+  state,
+});
+
+function mapDispatchToProps(dispatch) {
+  return {
+    CartActions: bindActionCreators(CartActions, dispatch),
+  };
+}
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(Cart);

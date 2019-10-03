@@ -11,6 +11,7 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import * as ProductActions from '../../store/ducks/products';
 import * as CartActions from '../../store/ducks/cart';
+import {formatPrice} from '../../util/format';
 
 class ProductList extends React.Component {
   constructor(props) {
@@ -40,7 +41,7 @@ class ProductList extends React.Component {
             <Text style={S.Title} numberOfLines={2}>
               {item.name}
             </Text>
-            <Text style={S.Price}>R$ {item.price}</Text>
+            <Text style={S.Price}>{formatPrice(item.price)}</Text>
             <TouchableOpacity
               style={S.ButtonAdd}
               onPress={() => this.handleAddCart(item.id, item.price)}>
