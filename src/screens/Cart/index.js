@@ -6,6 +6,7 @@ import {
   Image,
   TouchableOpacity,
   TextInput,
+  ScrollView,
 } from 'react-native';
 import Header from '../../components/Header';
 import {connect} from 'react-redux';
@@ -13,7 +14,6 @@ import {bindActionCreators} from 'redux';
 import * as CartActions from '../../store/ducks/cart';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {formatPrice} from '../../util/format';
-
 class Cart extends Component {
   componentDidMount() {
     this.props.CartActions.listCart();
@@ -46,7 +46,7 @@ class Cart extends Component {
     return (
       <>
         <Header />
-        <View style={S.Container}>
+        <ScrollView style={S.Container}>
           <View style={S.Content}>
             {result.map((item, index) => (
               <View style={S.Card} key={item.id}>
@@ -58,6 +58,10 @@ class Cart extends Component {
                     </Text>
                     <Text style={S.Price}>{formatPrice(item.price)}</Text>
                   </View>
+                  <TouchableOpacity
+                    onPress={() => this.handleRemoveItem(item.id)}>
+                    <Icon name="highlight-off" size={26} color="#555" />
+                  </TouchableOpacity>
                 </View>
                 <View style={S.Value}>
                   <View style={S.Actions}>
@@ -70,7 +74,11 @@ class Cart extends Component {
                       <Icon
                         name="remove-circle-outline"
                         size={26}
-                        color="#7159C1"
+                        color={
+                          this.props.state.cart[index].amount > 1
+                            ? '#7159c1'
+                            : '#ccc'
+                        }
                       />
                     </TouchableOpacity>
                     <TextInput
@@ -109,11 +117,12 @@ class Cart extends Component {
                 )}
               </Text>
             </View>
+
             <TouchableOpacity style={S.ButtonAdd}>
               <Text style={S.ButtonText}>FINALIZAR PEDIDO</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </ScrollView>
       </>
     );
   }
@@ -124,12 +133,13 @@ const S = StyleSheet.create({
     backgroundColor: '#191920',
     flex: 1,
     paddingHorizontal: 20,
-    paddingVertical: 20,
+    paddingVertical: 10,
   },
   Content: {
     backgroundColor: '#fff',
     padding: 10,
     borderRadius: 10,
+    marginBottom: 60,
   },
   Card: {
     marginBottom: 10,
